@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name" translatable="true">Android Code Test Adrian Roberts</string>
+    <string name="activity_contacts" translatable="true">Contacts</string>
+    <string name="empty_contact_list" translatable="true">No contacts (matching test constraints)</string>
+    <string name="search_list_title" formatted="true" translatable="true"> Contacts List Search for %s</string>
+    <string name="address_button_description" translatable="true">View Address</string>
+    <string name="search_hint" translatable="true">Find contacts</string>
+    <string name="menu_add_contact" translatable="true">Add Contact</string>
+    <string name="menu_search" translatable="true">Find contact...</string>
+    <string name="menu_edit_contact" translatable="true">Edit Contact</string>
+    <string name="contact_bday_label" translatable="true">BORN </string>
+
+    <string name="field_type_home" translatable="true">Home</string>
+    <string name="field_type_work" translatable="true">Work</string>
+    <string name="field_type_mobile" translatable="true">Mobile</string>
+    <string name="field_type_other" translatable="true">Other</string>
+
+</resources>

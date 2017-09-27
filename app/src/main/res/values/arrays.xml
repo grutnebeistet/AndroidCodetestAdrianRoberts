@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="field_types_phone"> <!--   -->
+        <item>@string/field_type_home</item>
+        <item>@string/field_type_work</item>
+        <item>@string/field_type_other</item>
+        <item>@string/field_type_mobile</item>
+    </string-array>
+
+    <string-array name="field_types_address_email"> <!--   -->
+        <item>@string/field_type_home</item>
+        <item>@string/field_type_work</item>
+        <item>@string/field_type_other</item>
+    </string-array>
+</resources>
