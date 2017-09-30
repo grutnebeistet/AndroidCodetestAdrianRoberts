@@ -4,7 +4,6 @@ import static com.roberts.adrian.androidcodetestadrianroberts.ContactEditorActiv
 import static com.roberts.adrian.androidcodetestadrianroberts.ContactEditorActivity.FIELD_TYPE_ADDRESS_OTHER;
 import static com.roberts.adrian.androidcodetestadrianroberts.ContactEditorActivity.FIELD_TYPE_ADDRESS_WORK;
 import static com.roberts.adrian.androidcodetestadrianroberts.ContactEditorActivity.FIELD_TYPE_EMAIL_HOME;
-import static com.roberts.adrian.androidcodetestadrianroberts.ContactEditorActivity.FIELD_TYPE_EMAIL_OTHER;
 import static com.roberts.adrian.androidcodetestadrianroberts.ContactEditorActivity.FIELD_TYPE_EMAIL_WORK;
 import static com.roberts.adrian.androidcodetestadrianroberts.ContactEditorActivity.FIELD_TYPE_PHONE_HOME;
 import static com.roberts.adrian.androidcodetestadrianroberts.ContactEditorActivity.FIELD_TYPE_PHONE_MOBILE;
@@ -24,11 +23,8 @@ public class Utils {
             case FIELD_TYPE_EMAIL_WORK:
                 return TYPE_INDEX_WORK;
 
-            case FIELD_TYPE_EMAIL_OTHER:
-                return TYPE_INDEX_OTHER;
             default:
-                return 0;
-
+                return TYPE_INDEX_OTHER;
 
         }
     }
@@ -42,7 +38,7 @@ public class Utils {
             case FIELD_TYPE_ADDRESS_OTHER:
                 return TYPE_INDEX_OTHER;
             default:
-                return 0;
+                return TYPE_INDEX_OTHER;
 
 
         }
@@ -59,7 +55,7 @@ public class Utils {
             case FIELD_TYPE_PHONE_OTHER:
                 return TYPE_INDEX_OTHER;
             default:
-                return 0;
+                return TYPE_INDEX_OTHER;
 
         }
     }

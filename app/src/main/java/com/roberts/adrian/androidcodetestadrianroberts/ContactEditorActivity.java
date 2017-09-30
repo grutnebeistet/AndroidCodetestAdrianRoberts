@@ -573,6 +573,7 @@ public class ContactEditorActivity extends AppCompatActivity
             // if in edit mode deletion from contactContract is set up
             @Override
             public void onClick(View view) {
+                mExitWithoutPrompt = false;
                 Object deleteItem = deleteButton.getId();
                 linearLayout.removeView(newField);
                 switch (linearLayout.getId()) {
@@ -580,7 +581,7 @@ public class ContactEditorActivity extends AppCompatActivity
                         int addrIndex = mAdditionalAddressViews.indexOf(deleteItem) + 1;
                         mAdditionalAddressViews.remove(mAdditionalAddressViews.indexOf(deleteItem));
 
-                        if (mEditContactMode) {
+                        if (mEditContactMode && mAddresses.size() > addrIndex) {
                             DbUtils.deleteContactDetail(ContactEditorActivity.this,
                                     ops,
                                     mContactID,
@@ -594,7 +595,7 @@ public class ContactEditorActivity extends AppCompatActivity
                     case R.id.emails_ll:
                         int emailIndex = mAdditionalEmailsViews.indexOf(deleteItem) + 1;
                         mAdditionalEmailsViews.remove(mAdditionalEmailsViews.indexOf(deleteItem));
-                        if (mEditContactMode) {
+                        if (mEditContactMode && mEmails.size() > emailIndex) {
                             DbUtils.deleteContactDetail(ContactEditorActivity.this,
                                     ops,
                                     mContactID,
@@ -609,7 +610,7 @@ public class ContactEditorActivity extends AppCompatActivity
                         int numberIndex = mAdditionalPhonesViews.indexOf(deleteItem) + 1;
                         mAdditionalPhonesViews.remove(mAdditionalPhonesViews.indexOf(deleteItem));
 
-                        if (mEditContactMode) {
+                        if (mEditContactMode && mPhoneNumbers.size() > numberIndex) {
                             Log.i(TAG, "index: " + index);
                             DbUtils.deleteContactDetail(ContactEditorActivity.this,
                                     ops,
