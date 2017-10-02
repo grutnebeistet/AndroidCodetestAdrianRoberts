@@ -216,11 +216,12 @@ public class ContactDetailsFragment extends Fragment
             mDetailsLinearLayout.setVisibility(View.INVISIBLE);
             mEmptyView.setVisibility(VISIBLE);
 
-        }
+        }else {
             getLoaderManager().restartLoader(PHONE_NUMBERS_LOADER_ID, null, this);
             getLoaderManager().restartLoader(EMAILS_LOADER_ID, null, this);
             getLoaderManager().restartLoader(ADDRESSES_LOADER_ID, null, this);
             getLoaderManager().restartLoader(EVENTS_LOADER_ID, null, this);
+        }
 
 
      /*   getLoaderManager().restartLoader(PHONE_NUMBERS_LOADER_ID, null, this);
@@ -240,14 +241,12 @@ public class ContactDetailsFragment extends Fragment
             mDetailsLinearLayout.setVisibility(VISIBLE);
             mImageView.setVisibility(VISIBLE);
             mEmptyView.setVisibility(GONE);
-
-
-
-
+            getLoaderManager().restartLoader(PHONE_NUMBERS_LOADER_ID, null, this);
+            getLoaderManager().restartLoader(EMAILS_LOADER_ID, null, this);
+            getLoaderManager().restartLoader(ADDRESSES_LOADER_ID, null, this);
+            getLoaderManager().restartLoader(EVENTS_LOADER_ID, null, this);
 
         }
-
-
     }
 
     @Override

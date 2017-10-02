@@ -38,6 +38,7 @@
 
         <activity
             android:name=".ContactEditorActivity"
+            android:label="Edit Contact"
             android:configChanges="orientation" />
 
         <provider
