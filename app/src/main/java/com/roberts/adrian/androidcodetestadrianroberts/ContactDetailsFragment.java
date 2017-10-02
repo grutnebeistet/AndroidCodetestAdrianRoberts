@@ -429,6 +429,8 @@ public class ContactDetailsFragment extends Fragment
                                     getActivity().getContentResolver().delete(mContactUri, null, null);
                                 if (mIsTwoPaneLayout) {
                                     startActivity(new Intent(getActivity(), ContactsActivity.class));
+                                    mEmptyView.setVisibility(VISIBLE);
+                                    mDetailsLinearLayout.setVisibility(View.INVISIBLE);
 
                                 } else
                                     getActivity().finish();
