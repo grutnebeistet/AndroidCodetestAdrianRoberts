@@ -576,10 +576,10 @@ public class ContactEditorActivity extends AppCompatActivity
                     phone_type);
             mPhoneNumbers.get(0).setNumber(mainNumber);
 
-            // update main address if any
+            // update main address
             if (!isEmpty(mAddressEditText)) {
                 if (mAddresses.size() == 0) {
-                    insertAdditionalAddress(ops, mAddressEditText.getText().toString(), Integer.valueOf(mContactID), address_type);
+                    insertAdditionalAddress(ops, mAddressEditText.getText().toString(), mRawContactId, address_type);
                     Log.i(TAG, "insert addresss");
                 } else {
                     updateContactField(ops,
@@ -675,7 +675,6 @@ public class ContactEditorActivity extends AppCompatActivity
         }
 
         finish();
-
     }
 
     /**

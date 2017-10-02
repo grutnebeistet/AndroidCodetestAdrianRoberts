@@ -207,6 +207,9 @@ public class ContactDetailsFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
+        mPhoneNumbers = new ArrayList<>();
+        mEmails = new ArrayList<>();
+        mAddresses = new ArrayList<>();
         Log.i(TAG, "onResume");
         Log.i(TAG, "uri : " + mContactUri + ", mname: " + mName);
         if (mContactUri == null) {
@@ -214,6 +217,11 @@ public class ContactDetailsFragment extends Fragment
             mEmptyView.setVisibility(VISIBLE);
 
         }
+            getLoaderManager().restartLoader(PHONE_NUMBERS_LOADER_ID, null, this);
+            getLoaderManager().restartLoader(EMAILS_LOADER_ID, null, this);
+            getLoaderManager().restartLoader(ADDRESSES_LOADER_ID, null, this);
+            getLoaderManager().restartLoader(EVENTS_LOADER_ID, null, this);
+
 
      /*   getLoaderManager().restartLoader(PHONE_NUMBERS_LOADER_ID, null, this);
         getLoaderManager().restartLoader(EMAILS_LOADER_ID, null, this);
@@ -227,19 +235,14 @@ public class ContactDetailsFragment extends Fragment
             mContactUri = uri;
             mName = name;
 
-            mPhoneNumbers = new ArrayList<>();
-            mEmails = new ArrayList<>();
-            mAddresses = new ArrayList<>();
+
             // Shows the contact photo ImageView and hides the empty view
             mDetailsLinearLayout.setVisibility(VISIBLE);
             mImageView.setVisibility(VISIBLE);
             mEmptyView.setVisibility(GONE);
 
 
-            getLoaderManager().restartLoader(PHONE_NUMBERS_LOADER_ID, null, this);
-            getLoaderManager().restartLoader(EMAILS_LOADER_ID, null, this);
-            getLoaderManager().restartLoader(ADDRESSES_LOADER_ID, null, this);
-            getLoaderManager().restartLoader(EVENTS_LOADER_ID, null, this);
+
 
 
         }
@@ -407,8 +410,6 @@ public class ContactDetailsFragment extends Fragment
                 Intent editContact = new Intent(Intent.ACTION_EDIT, mContactUri,
                         getActivity().getBaseContext(), ContactEditorActivity.class);
                 Bundle bundle = new Bundle();
-
-
                 bundle.putParcelableArrayList(EXTRA_NUMBERS_LIST, mPhoneNumbers);
                 bundle.putParcelableArrayList(EXTRA_EMAILS_LIST, mEmails);
                 bundle.putParcelableArrayList(EXTRA_ADDRESSES_LIST, mAddresses);
