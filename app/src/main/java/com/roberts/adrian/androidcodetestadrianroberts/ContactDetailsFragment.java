@@ -339,7 +339,7 @@ public class ContactDetailsFragment extends Fragment
                 cursor.moveToFirst();
                 if (cursor.getCount() > 0) {
                     String contactImage = cursor.getString(INDEX_EMAIL_PHOTO_URI);
-                    Picasso.with(getActivity()).load(contactImage).centerCrop().fit().
+                    Picasso.with(getActivity()).load(contactImage).centerCrop().resize(222,222).
                             placeholder(R.drawable.ic_contact_picture).error(R.drawable.ic_contact_picture).into(mImageView);
                 }
                 mEmailAdapter.swapCursor(cursor);

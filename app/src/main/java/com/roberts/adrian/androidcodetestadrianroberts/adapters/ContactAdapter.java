@@ -60,20 +60,20 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
                                     ContactsContract.CommonDataKinds.Email.ADDRESS,
                                     ContactsContract.CommonDataKinds.Phone.NUMBER,
                                     ContactsContract.Contacts.PHOTO_THUMBNAIL_URI});
-                    mCursor.moveToFirst();
 
-                  do {
+                    mCursor.moveToFirst();
+                    while (mCursor.moveToNext()) {
+
                         String id = mCursor.getString(ContactsFragment.INDEX_EMAIL_CONTACT_ID);
                         Log.i("getFilter", "mEmails.Id: " + mEmails.get(id));
                         String name = mCursor.getString(ContactsFragment.INDEX_EMAIL_DISPLAY_NAME);
                         String contactThumbnail = mFilteredCursor.getString(ContactsFragment.INDEX_CONTACT_THUMBNAIL);
-                        //TODO iteratoe hashmaps to get all emails/numbers in search?
                         if (name.toLowerCase().contains(mSearchTerm.toLowerCase()) ||
                                 mEmails.get(id).toLowerCase().contains(mSearchTerm.toLowerCase()) ||
                                 mNumbers.get(id).toLowerCase().contains(mSearchTerm.toLowerCase()))
-                            filteredMatrixC.addRow(new Object[]{id, name, mEmails.get(id), mNumbers.get(id),contactThumbnail });//, email, number});
+                            filteredMatrixC.addRow(new Object[]{id, name, mEmails.get(id), mNumbers.get(id), contactThumbnail});//, email, number});
 
-                    }  while (mCursor.moveToNext());
+                    }
                     mCursor.close();
                     mFilteredCursor = new MergeCursor(new Cursor[]{filteredMatrixC, null});
                 }
