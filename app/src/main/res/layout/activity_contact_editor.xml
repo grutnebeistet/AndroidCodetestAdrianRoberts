@@ -9,9 +9,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp"
+        android:paddingEnd="@dimen/padding"
+        android:paddingStart="@dimen/padding"
         tools:context="com.roberts.adrian.androidcodetestadrianroberts.ContactEditorActivity">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp">
+
+            <ImageButton
+                android:id="@+id/add_photo_image_button"
+                android:layout_width="72dp"
+                android:layout_height="42dp"
+                android:layout_gravity="center_horizontal|center_vertical"
+                android:background="@color/colorBackground"
+                android:scaleType="centerCrop"
+                android:src="@mipmap/ic_add_photo" />
+        </FrameLayout>
+
+        <ImageView
+            android:id="@+id/image_view"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:background="@color/colorBackground"
+            android:visibility="gone" />
 
         <EditText
             android:id="@+id/edit_text_fname"
@@ -30,13 +51,13 @@
             android:paddingBottom="@dimen/padding_medium" />
 
 
-            <EditText
-                android:id="@+id/edit_birthday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:hint="Birthday"
-                android:inputType="none" />
+        <EditText
+            android:id="@+id/edit_birthday"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:hint="Birthday"
+            android:inputType="none" />
 
         <!--Phone-->
         <LinearLayout
@@ -44,8 +65,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="@dimen/padding_medium"
-            android:paddingBottom="@dimen/padding_medium">
+            android:paddingBottom="@dimen/padding_medium"
+            android:paddingTop="@dimen/padding_medium">
 
             <LinearLayout
                 android:layout_width="match_parent"

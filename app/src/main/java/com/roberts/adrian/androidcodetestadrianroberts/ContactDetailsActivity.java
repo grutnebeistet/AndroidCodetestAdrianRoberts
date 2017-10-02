@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
-import static com.roberts.adrian.androidcodetestadrianroberts.ContactDetailsFragment.EXTRA_CONTACT_URI;
-
 
 public class ContactDetailsActivity extends AppCompatActivity {
     private static final String TAG = ContactDetailsActivity.class.getSimpleName();
@@ -20,18 +18,22 @@ public class ContactDetailsActivity extends AppCompatActivity {
         String name = getIntent().getStringExtra(ContactsFragment.EXTRA_CONTACT_NAME);
         setTitle(name);
 
-        final Uri uri = getIntent().getData();
+        if (getIntent() != null) {
+            final Uri uri = getIntent().getData();
+            // Checks to see if fragment has already been added, otherwise adds a new
+            // ContactDetailFragment with the Uri provided in the intent
+            if (getFragmentManager().findFragmentByTag(TAG) == null) {
+                final android.app.FragmentTransaction ft = getFragmentManager().beginTransaction();
 
-        if (savedInstanceState == null) {
-            setContentView(R.layout.activity_contact_details);
-            ContactDetailsFragment details = new ContactDetailsFragment();
-            Bundle args = new Bundle();
-            args.putParcelable(EXTRA_CONTACT_URI, uri);
-            details.setArguments(args);
+                // Adds a newly created ContactDetailFragment that is instantiated with the
+                // data Uri
+                ft.add(android.R.id.content, ContactDetailsFragment.newInstance(uri, name), TAG);
+                ft.commit();
+            }
+        } else {
+            // No intent provided, nothing to do so finish()
+            finish();
 
-            getFragmentManager().beginTransaction().
-                    add(R.id.details_fragment_container, details).
-                    commit();
         }
 
     }

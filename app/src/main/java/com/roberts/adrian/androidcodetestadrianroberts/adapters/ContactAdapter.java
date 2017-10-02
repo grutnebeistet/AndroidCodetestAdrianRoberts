@@ -19,10 +19,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
 import com.roberts.adrian.androidcodetestadrianroberts.ContactsFragment;
 import com.roberts.adrian.androidcodetestadrianroberts.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -41,6 +43,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
     private ContactAdapterOnClickHandler mOnClickHandler;
     private HashMap<String, String> mEmails;
     private HashMap<String, String> mNumbers;
+    private int selectedPos = -1;
 
     @Override
     public Filter getFilter() {
@@ -61,11 +64,11 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
                         String id = mCursor.getString(ContactsFragment.INDEX_EMAIL_CONTACT_ID);
                         Log.i("getFilter", "mEmails.Id: " + mEmails.get(id));
                         String name = mCursor.getString(ContactsFragment.INDEX_EMAIL_DISPLAY_NAME);
-                            //TODO iteratoe hashmaps to get all emails/numbers in search?
+                        //TODO iteratoe hashmaps to get all emails/numbers in search?
                         if (name.toLowerCase().contains(mSearchTerm.toLowerCase()) ||
                                 mEmails.get(id).toLowerCase().contains(mSearchTerm.toLowerCase()) ||
                                 mNumbers.get(id).toLowerCase().contains(mSearchTerm.toLowerCase()))
-                            filteredMatrixC.addRow(new Object[]{id, name,mEmails.get(id), mNumbers.get(id)});//, email, number});
+                            filteredMatrixC.addRow(new Object[]{id, name, mEmails.get(id), mNumbers.get(id)});//, email, number});
 
                     }
                     mCursor.close();
@@ -90,10 +93,10 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
 
     public ContactAdapter(Context context,
                           ContactAdapterOnClickHandler onClickHandler) {
+
         mOnClickHandler = onClickHandler;
         mContext = context;
 
-        Log.i("ADAPTER ", "ADDAAAPTER");
     }
 
     public void swapCursors(Cursor data, HashMap<String, String> emails,
@@ -113,18 +116,31 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
         return new ViewHolder(view);
     }
 
+
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         mFilteredCursor.moveToPosition(position);
+
+
+        holder.itemView.setSelected(
+                mContext.getResources().getBoolean(R.bool.has_two_panes) &&
+                        selectedPos == position);
+
         String contactName = mFilteredCursor.getString(mFilteredCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.DISPLAY_NAME_PRIMARY));
         String contactId = mFilteredCursor.getString(ContactsFragment.INDEX_CONTACT_ID);
-         String contactEmail = mEmails.get(contactId) ;
+        String contactThumbnail = mFilteredCursor.getString(ContactsFragment.INDEX_CONTACT_THUMBNAIL);
+
+        String contactEmail = mEmails.get(contactId);
         // mFilteredCursor.getString(mFilteredCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.ADDRESS));
-         String contactNumber = mNumbers.get(contactId);
+        String contactNumber = mNumbers.get(contactId);
+
 
         holder.mContactName.setText(contactName);
-         holder.mContactEmail.setText(contactEmail);
+        holder.mContactEmail.setText(contactEmail);
         holder.mContactNumber.setText(contactNumber);
+
+        Picasso.with(mContext).load(contactThumbnail).
+                centerCrop().fit().placeholder(R.drawable.ic_contact_picture).error(R.drawable.ic_contact_picture).into(holder.mIcon);
 
         String fullName = contactName;
         if (mSearchTerm != null && !mSearchTerm.isEmpty()) {
@@ -163,11 +179,14 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
         TextView mContactEmail;
         @BindView(R.id.list_item_contact_number)
         TextView mContactNumber;
+        @BindView(android.R.id.icon)
+        QuickContactBadge mIcon;
+
 
         public ViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
-
+            view.setClickable(true);
             view.setOnClickListener(this);
         }
 
@@ -175,16 +194,14 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
         @Override
         public void onClick(View view) {
             if (mFilteredCursor.isClosed()) return;
-
             mFilteredCursor.moveToPosition(getAdapterPosition());
-
             String contactName = mFilteredCursor.getString(mFilteredCursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-            Log.i("HEHEHE", "Naame " + contactName);
             long contactId = mFilteredCursor.getLong(ContactsFragment.INDEX_EMAIL_CONTACT_ID);
 
             Uri contactUri = Uri.withAppendedPath(
                     ContactsContract.Contacts.CONTENT_URI, String.valueOf(contactId));
-
+            selectedPos = getAdapterPosition();
+            notifyDataSetChanged();
 
             mOnClickHandler.onClick(contactUri, contactName);
         }

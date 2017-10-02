@@ -14,5 +14,6 @@
     <string name="field_type_work" translatable="true">Work</string>
     <string name="field_type_mobile" translatable="true">Mobile</string>
     <string name="field_type_other" translatable="true">Other</string>
+    <string name="msg_no_viewer">I cannot find an image viewer app that supports a content: Uri</string>
 
 </resources>

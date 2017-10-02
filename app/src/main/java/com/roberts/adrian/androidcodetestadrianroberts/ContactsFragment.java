@@ -2,6 +2,7 @@ package com.roberts.adrian.androidcodetestadrianroberts;
 
 import android.Manifest;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -10,7 +11,6 @@ import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -45,7 +45,9 @@ public class ContactsFragment extends Fragment
     private static final String[] CONTACT_AND_PHONE_PROJECTION = {
             ContactsContract.Contacts._ID,
             ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
-            ContactsContract.Contacts.HAS_PHONE_NUMBER
+            ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
+            ContactsContract.Contacts.HAS_PHONE_NUMBER,
+
     };
     private final String[] CONTACT_EMAIL_PROJECTION = {
             ContactsContract.CommonDataKinds.Email.CONTACT_ID,
@@ -57,6 +59,7 @@ public class ContactsFragment extends Fragment
     // Column indexes
     public static final int INDEX_CONTACT_ID = 0;
     public static final int INDEX_CONTACT_NAME = 1;
+    public static final int INDEX_CONTACT_THUMBNAIL = 2;
 
     public static final int INDEX_EMAIL_HAS_PHONE = 3;
     public static final int INDEX_EMAIL_DISPLAY_NAME = 1;
@@ -64,15 +67,39 @@ public class ContactsFragment extends Fragment
     public static final int INDEX_EMAIL_CONTACT_ID = 0;
 
     @BindView(R.id.contacts_recycler_view)
-    RecyclerView mContactsListView;
+    RecyclerView mContactsRecyclerView;
     @BindView(R.id.no_contacts_view)
     TextView mEmptyList;
     ContactAdapter mContactAdapter;
     private Unbinder unbinder;
-
+    private boolean mIsTwoPaneLayout;
+    private OnContactsInteractionListener mOnContactSelectedListener;
     private static final String ARG_COLUMN_COUNT = "column-count";
 
+    private int lastPosition;
+
     public ContactsFragment() {
+    }
+
+
+    /**
+     * This interface must be implemented by any activity that loads this fragment. When an
+     * interaction occurs, such as touching an item from the ListView, these callbacks will
+     * be invoked to communicate the event back to the activity.
+     */
+    public interface OnContactsInteractionListener {
+        /**
+         * Called when a contact is selected from the ListView.
+         *
+         * @param contactUri The contact Uri.
+         */
+        public void onContactSelected(Uri contactUri, String name);
+
+        /**
+         * Called when the ListView selection is cleared like when
+         * a contact search is taking place or is finishing.
+         */
+        public void onSelectionCleared();
     }
 
     @SuppressWarnings("unused")
@@ -90,12 +117,14 @@ public class ContactsFragment extends Fragment
         Log.i(TAG, "onResume");
         if ((ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED))
             getContacts();
+
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        mIsTwoPaneLayout = getResources().getBoolean(R.bool.has_two_panes);
     }
 
 
@@ -107,26 +136,29 @@ public class ContactsFragment extends Fragment
         mContactAdapter = new ContactAdapter(getActivity(), this);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        mContactsListView.setLayoutManager(layoutManager);
-        mContactsListView.setAdapter(mContactAdapter);
-
+        mContactsRecyclerView.setLayoutManager(layoutManager);
+        mContactsRecyclerView.setAdapter(mContactAdapter);
         return view;
 
 
     }
 
+
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onClick(Uri contactUri, String contactName) {
+        mOnContactSelectedListener.onContactSelected(contactUri, contactName);
 
     }
 
     @Override
-    public void onClick(Uri contactUri, String contactName) {
-        Intent intent = new Intent(getActivity(), ContactDetailsActivity.class);
-        intent.setData(contactUri);
-        intent.putExtra(EXTRA_CONTACT_NAME, contactName);
-        startActivity(intent);
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            mOnContactSelectedListener = (OnContactsInteractionListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement OnContactsInteractionListener");
+        }
     }
 
     @Override
@@ -180,16 +212,18 @@ public class ContactsFragment extends Fragment
 
         MatrixCursor cursor = new MatrixCursor(new String[]
                 {ContactsContract.Contacts._ID,
-                        ContactsContract.CommonDataKinds.Email.DISPLAY_NAME_PRIMARY
+                        ContactsContract.CommonDataKinds.Email.DISPLAY_NAME_PRIMARY,
+                        ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
                 });
         for (CursorJoiner.Result joinerRes : joiner) {
             switch (joinerRes) {
                 case BOTH:
                     String contactId = contactsWithEmailsCursor.getString(INDEX_EMAIL_CONTACT_ID);//contactsWithPhonesCursor.getString(INDEX_CONTACT_ID);
                     String contactName = contactsWithEmailsCursor.getString(INDEX_EMAIL_DISPLAY_NAME);//contactsWithPhonesCursor.getString(INDEX_CONTACT_NAME);
+                    String thumbailUrl = contactsWithPhonesCursor.getString(INDEX_CONTACT_THUMBNAIL);
 /*                    String email = contactsWithEmailsCursor.getString(INDEX_EMAIL_ADDRESS);
                     String number = phoneNumbersCursor.getString(ContactDetailsFragment.INDEX_PHONE_NUMBER);*/
-                    cursor.addRow(new String[]{contactId, contactName});//, email, number});
+                    cursor.addRow(new String[]{contactId, contactName, thumbailUrl});//, email, number});
                     break;
             }
         }
@@ -220,11 +254,21 @@ public class ContactsFragment extends Fragment
         inflater.inflate(R.menu.contacts_menu, menu);
 
         MenuItem searchItem = menu.findItem(R.id.menu_search);
+        if (mIsTwoPaneLayout) {
+            inflater.inflate(R.menu.contact_detail_menu, menu);
+            MenuItem editContact = menu.findItem(R.id.menu_edit_contact);
+        }
+
 
         android.support.v7.widget.SearchView searchView = (android.support.v7.widget.SearchView) searchItem.getActionView();
 
         search(searchView);
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     private void search(SearchView searchView) {
@@ -251,6 +295,8 @@ public class ContactsFragment extends Fragment
             case R.id.menu_add_contact:
                 Intent intent = new Intent(getActivity(), ContactEditorActivity.class);
                 startActivity(intent);
+                break;
+
         }
         return super.onOptionsItemSelected(item);
     }

@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.roberts.adrian.androidcodetestadrianroberts.adapters.AddressAdapter;
@@ -40,9 +41,11 @@ import butterknife.Unbinder;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static com.roberts.adrian.androidcodetestadrianroberts.ContactsFragment.EXTRA_CONTACT_NAME;
 
 public class ContactDetailsFragment extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
+    private static final String TAG = ContactDetailsFragment.class.getSimpleName();
     public static final String EXTRA_CONTACT_URI =
             "com.roberts.adrian.androidcodetestadrianrobert.EXTRA_CONTACT_URI";
     private static Uri mContactUri;
@@ -65,7 +68,8 @@ public class ContactDetailsFragment extends Fragment
             ContactsContract.CommonDataKinds.Email.ADDRESS,
             ContactsContract.CommonDataKinds.Email.TYPE,
             ContactsContract.CommonDataKinds.Email.DISPLAY_NAME_PRIMARY,
-            ContactsContract.CommonDataKinds.Email._ID
+            ContactsContract.CommonDataKinds.Email._ID,
+            ContactsContract.CommonDataKinds.Email.PHOTO_URI
 
     };
     public static final String[] ADDRESS_PROJECTION = {
@@ -80,6 +84,7 @@ public class ContactDetailsFragment extends Fragment
     public static final int INDEX_EMAIL_TYPE = 2;
     public static final int INDEX_EMAIL_DISPLAY_NAME = 3;
     public static final int INDEX_EMAIL_ID = 4;
+    public static final int INDEX_EMAIL_PHOTO_URI = 5;
 
     public static final int INDEX_EVENT_START_DATE = 0;
     public static final int INDEX_EVENT_TYPE = 1;
@@ -114,6 +119,8 @@ public class ContactDetailsFragment extends Fragment
 //    LinearLayout mDetailsLayout;
     @BindView(R.id.empty_details)
     TextView mEmptyView;
+    @BindView(R.id.details_ll)LinearLayout
+    mDetailsLinearLayout;
     @BindView(R.id.numbers_recycler_view)
     RecyclerView mNumbersRecyclerView;
     @BindView(R.id.addresses_recycler_view)
@@ -134,13 +141,18 @@ public class ContactDetailsFragment extends Fragment
     private ArrayList<ContactEmail> mEmails;
     private ArrayList<ContactAddress> mAddresses;
     private String mBdate;
+    private String mName;
 
-    @SuppressWarnings("unused")
-    public static ContactDetailsFragment newInstance(Uri contactUri) {
+    private boolean mIsTwoPaneLayout;
+
+    public static ContactDetailsFragment newInstance(Uri contactUri, String name) {
+        Log.i(TAG, "newInstance");
         ContactDetailsFragment fragment = new ContactDetailsFragment();
         Bundle args = new Bundle();
         args.putParcelable(EXTRA_CONTACT_URI, contactUri);
+        args.putString(EXTRA_CONTACT_NAME, name);
         fragment.setArguments(args);
+        Log.i("DETAILSDRAG", "new Instance");
         return fragment;
     }
 
@@ -151,15 +163,24 @@ public class ContactDetailsFragment extends Fragment
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.i(TAG, "onCreate");
+        // Check if this fragment is part of a two pane set up or a single pane
+        mIsTwoPaneLayout = getResources().getBoolean(R.bool.has_two_panes);
+
+        // Let this fragment contribute menu items
+        setHasOptionsMenu(true);
+
+
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        Log.i(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_contact_details, container, false);
         unbinder = ButterKnife.bind(this, view);
         mContactUri = getActivity().getIntent().getData();
+        mName = getActivity().getIntent().getStringExtra(EXTRA_CONTACT_NAME);
 
         mNumbersRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mNumberAdapter = new NumberAdapter(getActivity());
@@ -173,11 +194,12 @@ public class ContactDetailsFragment extends Fragment
         mEmailAdapter = new EmailAdapter(getActivity());
         mEmailsRecyclerView.setAdapter(mEmailAdapter);
 
-        // TODO if permis
-        getLoaderManager().initLoader(PHONE_NUMBERS_LOADER_ID, null, this);
-        getLoaderManager().initLoader(EMAILS_LOADER_ID, null, this);
-        getLoaderManager().initLoader(ADDRESSES_LOADER_ID, null, this);
-        getLoaderManager().initLoader(EVENTS_LOADER_ID, null, this);
+       /* if(mContactUri != null) {
+            getLoaderManager().initLoader(PHONE_NUMBERS_LOADER_ID, null, this);
+            getLoaderManager().initLoader(EMAILS_LOADER_ID, null, this);
+            getLoaderManager().initLoader(ADDRESSES_LOADER_ID, null, this);
+            getLoaderManager().initLoader(EVENTS_LOADER_ID, null, this);
+        }*/
 
         return view;
     }
@@ -185,28 +207,68 @@ public class ContactDetailsFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
-        mPhoneNumbers = new ArrayList<>();
-        mEmails = new ArrayList<>();
-        mAddresses = new ArrayList<>();
-        getLoaderManager().restartLoader(PHONE_NUMBERS_LOADER_ID, null, this);
+        Log.i(TAG, "onResume");
+        Log.i(TAG, "uri : " + mContactUri + ", mname: " + mName);
+        if (mContactUri == null) {
+            mDetailsLinearLayout.setVisibility(View.INVISIBLE);
+            mEmptyView.setVisibility(VISIBLE);
+
+        }
+
+     /*   getLoaderManager().restartLoader(PHONE_NUMBERS_LOADER_ID, null, this);
         getLoaderManager().restartLoader(EMAILS_LOADER_ID, null, this);
         getLoaderManager().restartLoader(ADDRESSES_LOADER_ID, null, this);
-        getLoaderManager().initLoader(EVENTS_LOADER_ID, null, this);
+        getLoaderManager().restartLoader(EVENTS_LOADER_ID, null, this);*/
     }
 
-    public void setContact(Uri uri) {
+    public void setContact(Uri uri, String name) {
+        Log.i(TAG, "onSetContact");
         if (uri != null) {
             mContactUri = uri;
-            // loads the contact image
-            Picasso.with(getActivity()).load(mContactUri).centerCrop().into(mImageView);
+            mName = name;
 
+            mPhoneNumbers = new ArrayList<>();
+            mEmails = new ArrayList<>();
+            mAddresses = new ArrayList<>();
             // Shows the contact photo ImageView and hides the empty view
+            mDetailsLinearLayout.setVisibility(VISIBLE);
             mImageView.setVisibility(VISIBLE);
             mEmptyView.setVisibility(GONE);
+
+
+            getLoaderManager().restartLoader(PHONE_NUMBERS_LOADER_ID, null, this);
+            getLoaderManager().restartLoader(EMAILS_LOADER_ID, null, this);
+            getLoaderManager().restartLoader(ADDRESSES_LOADER_ID, null, this);
+            getLoaderManager().restartLoader(EVENTS_LOADER_ID, null, this);
+
 
         }
 
 
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Log.i(TAG, "onActivityCreated");
+        if (savedInstanceState == null) {
+            // Sets the argument extra as the currently displayed contact
+            setContact(getArguments() != null ?
+                            ((Uri) getArguments().getParcelable(EXTRA_CONTACT_URI)) : null,
+                    getArguments() != null ? getArguments().getString(EXTRA_CONTACT_NAME) : null);
+        } else {
+            // If being recreated from a saved state, sets the contact from the incoming
+            // savedInstanceState Bundle
+            setContact((Uri) savedInstanceState.getParcelable(EXTRA_CONTACT_URI),
+                    savedInstanceState.getString(EXTRA_CONTACT_NAME));
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(EXTRA_CONTACT_URI, mContactUri);
+        outState.putString(EXTRA_CONTACT_NAME, mName);
     }
 
     @Override
@@ -272,6 +334,12 @@ public class ContactDetailsFragment extends Fragment
                             cursor.getString(INDEX_EMAIL_ID),
                             cursor.getInt(INDEX_EMAIL_TYPE)));
                 }
+                cursor.moveToFirst();
+                if (cursor.getCount() > 0) {
+                    String contactImage = cursor.getString(INDEX_EMAIL_PHOTO_URI);
+                    Picasso.with(getActivity()).load(contactImage).centerCrop().fit().
+                            placeholder(R.drawable.ic_contact_picture).error(R.drawable.ic_contact_picture).into(mImageView);
+                }
                 mEmailAdapter.swapCursor(cursor);
                 break;
             case ADDRESSES_LOADER_ID:
@@ -322,10 +390,13 @@ public class ContactDetailsFragment extends Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        inflater.inflate(R.menu.contact_detail_menu, menu);
+        if (mContactUri != null && !mIsTwoPaneLayout) {
+            inflater.inflate(R.menu.contact_detail_menu, menu);
 
-        mEditContactMenuItem = menu.findItem(R.id.menu_edit_contact);
-        mEditContactMenuItem.setVisible(mContactUri != null);
+            mEditContactMenuItem = menu.findItem(R.id.menu_edit_contact);
+            Log.i("DetailsFragOptionsMenu", "mContact uri null " + (mContactUri == null));
+            mEditContactMenuItem.setVisible(mContactUri != null && !mIsTwoPaneLayout);
+        }
 
     }
 
@@ -333,7 +404,6 @@ public class ContactDetailsFragment extends Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_edit_contact:
-
                 Intent editContact = new Intent(Intent.ACTION_EDIT, mContactUri,
                         getActivity().getBaseContext(), ContactEditorActivity.class);
                 Bundle bundle = new Bundle();
@@ -343,8 +413,8 @@ public class ContactDetailsFragment extends Fragment
                 bundle.putParcelableArrayList(EXTRA_EMAILS_LIST, mEmails);
                 bundle.putParcelableArrayList(EXTRA_ADDRESSES_LIST, mAddresses);
                 bundle.putString("birthday", mBdate);
-                bundle.putString(ContactsFragment.EXTRA_CONTACT_NAME,
-                        getActivity().getIntent().getStringExtra(ContactsFragment.EXTRA_CONTACT_NAME));
+                bundle.putString(EXTRA_CONTACT_NAME,
+                        mName);
                 editContact.putExtras(bundle);
                 startActivity(editContact);
                 break;
@@ -355,8 +425,13 @@ public class ContactDetailsFragment extends Fragment
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                getActivity().getContentResolver().delete(mContactUri, null, null);
-                                getActivity().finish();
+                                if (mContactUri != null)
+                                    getActivity().getContentResolver().delete(mContactUri, null, null);
+                                if (mIsTwoPaneLayout) {
+                                    startActivity(new Intent(getActivity(), ContactsActivity.class));
+
+                                } else
+                                    getActivity().finish();
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -371,4 +446,6 @@ public class ContactDetailsFragment extends Fragment
         }
         return super.onOptionsItemSelected(item);
     }
+
+
 }
