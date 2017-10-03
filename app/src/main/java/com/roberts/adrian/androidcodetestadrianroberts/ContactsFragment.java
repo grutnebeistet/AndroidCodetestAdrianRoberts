@@ -45,8 +45,8 @@ public class ContactsFragment extends Fragment
     private static final String[] CONTACT_AND_PHONE_PROJECTION = {
             ContactsContract.Contacts._ID,
             ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
-            ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
             ContactsContract.Contacts.HAS_PHONE_NUMBER,
+            ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
 
     };
     private final String[] CONTACT_EMAIL_PROJECTION = {
@@ -59,7 +59,7 @@ public class ContactsFragment extends Fragment
     // Column indexes
     public static final int INDEX_CONTACT_ID = 0;
     public static final int INDEX_CONTACT_NAME = 1;
-    public static final int INDEX_CONTACT_THUMBNAIL = 2;
+    public static final int INDEX_CONTACT_THUMBNAIL = 3;
 
     public static final int INDEX_EMAIL_HAS_PHONE = 3;
     public static final int INDEX_EMAIL_DISPLAY_NAME = 1;

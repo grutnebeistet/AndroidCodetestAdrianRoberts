@@ -19,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
 import com.roberts.adrian.androidcodetestadrianroberts.ContactsFragment;
@@ -62,18 +61,19 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
                                     ContactsContract.Contacts.PHOTO_THUMBNAIL_URI});
 
                     mCursor.moveToFirst();
-                    while (mCursor.moveToNext()) {
-
+                    do {
                         String id = mCursor.getString(ContactsFragment.INDEX_EMAIL_CONTACT_ID);
-                        Log.i("getFilter", "mEmails.Id: " + mEmails.get(id));
                         String name = mCursor.getString(ContactsFragment.INDEX_EMAIL_DISPLAY_NAME);
-                        String contactThumbnail = mFilteredCursor.getString(ContactsFragment.INDEX_CONTACT_THUMBNAIL);
+                        String contactThumbnail = mCursor.getString(mCursor.getColumnIndex(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI));
+                        Log.i("Adapter", "Name " + name + "\nsearchTerm: " + mSearchTerm);
+                        String email = mEmails.get(id) != null ? mEmails.get(id) : "";
+                        String number = mNumbers.get(id) != null ? mNumbers.get(id) : "";
                         if (name.toLowerCase().contains(mSearchTerm.toLowerCase()) ||
-                                mEmails.get(id).toLowerCase().contains(mSearchTerm.toLowerCase()) ||
-                                mNumbers.get(id).toLowerCase().contains(mSearchTerm.toLowerCase()))
+                                email.toLowerCase().contains(mSearchTerm.toLowerCase()) ||
+                                number.toLowerCase().contains(mSearchTerm.toLowerCase()))
                             filteredMatrixC.addRow(new Object[]{id, name, mEmails.get(id), mNumbers.get(id), contactThumbnail});//, email, number});
 
-                    }
+                    } while (mCursor.moveToNext());
                     mCursor.close();
                     mFilteredCursor = new MergeCursor(new Cursor[]{filteredMatrixC, null});
                 }
@@ -130,7 +130,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
 
         String contactName = mFilteredCursor.getString(mFilteredCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.DISPLAY_NAME_PRIMARY));
         String contactId = mFilteredCursor.getString(ContactsFragment.INDEX_CONTACT_ID);
-        String contactThumbnail = mFilteredCursor.getString(ContactsFragment.INDEX_CONTACT_THUMBNAIL);
+        String contactThumbnail = mFilteredCursor.getString(mFilteredCursor.getColumnIndex(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI));
 
         String contactEmail = mEmails.get(contactId);
         // mFilteredCursor.getString(mFilteredCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.ADDRESS));
@@ -145,12 +145,14 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
                 centerCrop().fit().placeholder(R.drawable.ic_contact_picture).error(R.drawable.ic_contact_picture).into(holder.mIcon);
 
         String fullName = contactName;
+
         if (mSearchTerm != null && !mSearchTerm.isEmpty()) {
-            contactThumbnail = mFilteredCursor.getString(4);
+            contactThumbnail = mFilteredCursor.getString(mFilteredCursor.getColumnIndex(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI));
             holder.mContactEmail.setVisibility(View.VISIBLE);
             holder.mContactNumber.setVisibility(View.VISIBLE);
             int startPos = fullName.toLowerCase(Locale.US).indexOf(mSearchTerm.toLowerCase(Locale.US));
             int endPos = startPos + mSearchTerm.length();
+            Log.i("ContactAdapter", "thumb: " + contactThumbnail + "\nstartpos: " + startPos + "\nendpos: " + endPos);
             if (startPos != -1) {
                 Spannable spannable = new SpannableString(fullName);
                 int color = ContextCompat.getColor(mContext, R.color.colorAccent);
@@ -167,12 +169,16 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
 
             }
         } else {
-            holder.mContactName.setText(fullName);
-            Picasso.with(mContext).load(contactThumbnail).
-                    centerCrop().fit().placeholder(R.drawable.ic_contact_picture).error(R.drawable.ic_contact_picture).into(holder.mIcon);
             holder.mContactEmail.setVisibility(View.GONE);
             holder.mContactNumber.setVisibility(View.GONE);
         }
+            /*e
+            contactThumbnail = mFilteredCursor.getString(4);
+            holder.mContactName.setText(fullName);
+            Picasso.with(mContext).load(contactThumbnail).
+                    centerCrop().fit().placeholder(R.drawable.ic_contact_picture).error(R.drawable.ic_contact_picture).into(holder.mIcon);
+
+        }*/
 
     }
 
@@ -189,7 +195,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
         @BindView(R.id.list_item_contact_number)
         TextView mContactNumber;
         @BindView(android.R.id.icon)
-        QuickContactBadge mIcon;
+        de.hdodenhof.circleimageview.CircleImageView mIcon; //QuickContactBadge mIcon;
 
 
         public ViewHolder(View view) {

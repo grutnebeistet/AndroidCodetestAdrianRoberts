@@ -213,6 +213,8 @@ public class ContactEditorActivity extends AppCompatActivity
             mRawContactId = getRawId(this, mContactID);
 
             mEditContactMode = true;
+
+
             Bundle args = intent.getExtras();
 
             mPhoneNumbers = args.getParcelableArrayList(ContactDetailsFragment.EXTRA_NUMBERS_LIST);
@@ -232,6 +234,7 @@ public class ContactEditorActivity extends AppCompatActivity
             }
             mLnameEditText.setText(lName);
             mFnameEditText.setText(fName);
+            setTitle("Edit " + fName);
 
             mBirthdayEditText.setText(args.getString("birthday"));
             if (mAddresses.size() > 0)
@@ -267,6 +270,8 @@ public class ContactEditorActivity extends AppCompatActivity
         mLnameEditText.addTextChangedListener(this);
         mEmailEditText.addTextChangedListener(this);
         mPhoneEditText.addTextChangedListener(this);
+        if(!mEditContactMode)
+            setTitle("Add new contact");
     }
 
     @Override
