@@ -2,29 +2,19 @@ package com.roberts.adrian.androidcodetestadrianroberts;
 
 import android.Manifest;
 import android.app.DatePickerDialog;
-import android.content.ActivityNotFoundException;
-import android.content.ClipData;
 import android.content.ContentProviderOperation;
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.content.res.AssetFileDescriptor;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.ContactsContract;
-import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -47,20 +37,17 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.mindorks.paracamera.Camera;
 import com.roberts.adrian.androidcodetestadrianroberts.models.ContactAddress;
 import com.roberts.adrian.androidcodetestadrianroberts.models.ContactEmail;
 import com.roberts.adrian.androidcodetestadrianroberts.models.ContactPhone;
+import com.squareup.picasso.Picasso;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import butterknife.BindView;
@@ -75,6 +62,8 @@ import static com.roberts.adrian.androidcodetestadrianroberts.DbUtils.insertBirt
 import static com.roberts.adrian.androidcodetestadrianroberts.DbUtils.insertDisplayName;
 import static com.roberts.adrian.androidcodetestadrianroberts.DbUtils.insertEmail;
 import static com.roberts.adrian.androidcodetestadrianroberts.DbUtils.insertNumber;
+import static com.roberts.adrian.androidcodetestadrianroberts.DbUtils.insertPhoto;
+import static com.roberts.adrian.androidcodetestadrianroberts.DbUtils.insertAdditionalPhoto;
 import static com.roberts.adrian.androidcodetestadrianroberts.DbUtils.updateBirthdate;
 import static com.roberts.adrian.androidcodetestadrianroberts.DbUtils.updateContactField;
 import static com.roberts.adrian.androidcodetestadrianroberts.DbUtils.updateDisplayName;
@@ -175,6 +164,8 @@ public class ContactEditorActivity extends AppCompatActivity
     private File output = null;
     private String selectedImagePath = "";
 
+    Camera mCamera;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -237,6 +228,12 @@ public class ContactEditorActivity extends AppCompatActivity
             setTitle("Edit " + fName);
 
             mBirthdayEditText.setText(args.getString("birthday"));
+            if (args.getString("photoUri") != null) {
+                Picasso.with(this).load(args.getString("photoUri")).fit().centerCrop().error(R.drawable.ic_contact_picture).
+                        into(mImageView);
+                mImageView.setVisibility(View.VISIBLE);
+            }
+
             if (mAddresses.size() > 0)
                 mSpinnerAddress.setSelection(Utils.getSpinnerLabelAddress(mAddresses.get(0).getType()));
             mSpinnerPhone.setSelection(Utils.getSpinnerLabelPhone(mPhoneNumbers.get(0).getType()));
@@ -270,8 +267,18 @@ public class ContactEditorActivity extends AppCompatActivity
         mLnameEditText.addTextChangedListener(this);
         mEmailEditText.addTextChangedListener(this);
         mPhoneEditText.addTextChangedListener(this);
-        if(!mEditContactMode)
+        if (!mEditContactMode)
             setTitle("Add new contact");
+
+        mCamera = new Camera.Builder()
+                .resetToCorrectOrientation(true)// it will rotate the camera bitmap to the correct orientation from meta data
+                .setTakePhotoRequestCode(1)
+                .setDirectory("pics")
+                .setName("ali_" + System.currentTimeMillis())
+                .setImageFormat(Camera.IMAGE_JPEG)
+                .setCompression(75)
+                .setImageHeight(1000)// it will try to achieve this height as close as possible maintaining the aspect ratio;
+                .build(this);
     }
 
     @Override
@@ -294,8 +301,27 @@ public class ContactEditorActivity extends AppCompatActivity
                 setBirthday();
                 break;
             case R.id.add_photo_image_button:
-               // addPhoto();
+                try {
+                    mCamera.takePicture();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Camera.REQUEST_TAKE_PHOTO) {
+            Bitmap bitmap = mCamera.getCameraBitmap();
+            if (bitmap != null) {
+                mImageView.setVisibility(View.VISIBLE);
+                mImageView.setImageBitmap(bitmap);
+
+            } else {
+                Toast.makeText(this.getApplicationContext(), "Picture not taken!", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -323,151 +349,12 @@ public class ContactEditorActivity extends AppCompatActivity
         pickerDialog.show();
     }
 
-    private void addPhoto() {
-        output = new File(new File(getFilesDir(), PHOTOS), FILENAME);
-
-        if (output.exists()) {
-            output.delete();
-        } else {
-            output.getParentFile().mkdirs();
-        }
-
-        Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        Uri outputUri = FileProvider.getUriForFile(this, AUTHORITY, output);
-
-        i.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            i.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            ClipData clip =
-                    ClipData.newUri(getContentResolver(), "A photo", outputUri);
-
-            i.setClipData(clip);
-            i.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        } else {
-            List<ResolveInfo> resInfoList =
-                    getPackageManager()
-                            .queryIntentActivities(i, PackageManager.MATCH_DEFAULT_ONLY);
-
-            for (ResolveInfo resolveInfo : resInfoList) {
-                String packageName = resolveInfo.activityInfo.packageName;
-                grantUriPermission(packageName, outputUri,
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            }
-        }
-
-        try {
-            startActivityForResult(i, CONTENT_REQUEST);
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, "No camera detected", Toast.LENGTH_LONG).show();
-            finish();
-        }
-    }
-
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode,
-                                    Intent data) {
-        if (requestCode == CONTENT_REQUEST) {
-            if (resultCode == RESULT_OK) {
-               // Intent i = new Intent(Intent.ACTION_VIEW);
-                Uri outputUri = FileProvider.getUriForFile(this, AUTHORITY, output);
-
-              //  i.setDataAndType(outputUri, "image/jpeg");
-               // i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                Bitmap bitmap = decodeFile(output.getAbsolutePath());
-                Bitmap bitmap2 = decodeFile(outputUri.getPath());
-                mImageView.setImageBitmap(bitmap);
-
-                try {
-                   // startActivity(i);
-                } catch (ActivityNotFoundException e) {
-                    Toast.makeText(this, R.string.msg_no_viewer, Toast.LENGTH_LONG).show();
-                }
-
-                finish();
-            }
-        }
+    protected void onDestroy() {
+        super.onDestroy();
+        mCamera.deleteImage();
     }
-
-    private void insertPhoto(Bitmap photo) {
-        ByteArrayOutputStream BmpStream = new ByteArrayOutputStream();
-        ContentResolver cr = this.getContentResolver();
-        Uri RawContactPhotoUri;
-
-        RawContactPhotoUri = Uri.withAppendedPath(
-                ContentUris.withAppendedId(ContactsContract.RawContacts.CONTENT_URI, mRawContactId),
-                ContactsContract.RawContacts.DisplayPhoto.CONTENT_DIRECTORY
-        );
-
-        photo.compress(Bitmap.CompressFormat.JPEG, 100, BmpStream);
-
-        try {
-            AssetFileDescriptor fd = cr.openAssetFileDescriptor(RawContactPhotoUri, "rw");
-            OutputStream os = fd.createOutputStream();
-            os.write(BmpStream.toByteArray());
-            os.close();
-            fd.close();
-        } catch (IOException e) {
-
-        }
-    }
-
-    public Bitmap decodeFile(String path) {
-        try {
-            // Decode image size
-            BitmapFactory.Options o = new BitmapFactory.Options();
-            o.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(path, o);
-            // The new size we want to scale to
-            final int REQUIRED_SIZE = 70;
-
-            // Find the correct scale value. It should be the power of 2.
-            int scale = 1;
-            while (o.outWidth / scale / 2 >= REQUIRED_SIZE && o.outHeight / scale / 2 >= REQUIRED_SIZE)
-                scale *= 2;
-
-            // Decode with inSampleSize
-            BitmapFactory.Options o2 = new BitmapFactory.Options();
-            o2.inSampleSize = scale;
-            return BitmapFactory.decodeFile(path, o2);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        return null;
-
-    }
-
-    public String getAbsolutePath(Uri uri) {
-        String[] projection = {MediaStore.MediaColumns.DATA};
-        @SuppressWarnings("deprecation")
-        Cursor cursor = managedQuery(uri, projection, null, null, null);
-        if (cursor != null) {
-            int column_index = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
-            cursor.moveToFirst();
-            return cursor.getString(column_index);
-        } else
-            return null;
-    }
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = image.getAbsolutePath();
-        return image;
-    }
-
 
     private void updateBirtdayEditText() {
         String myFormat = "yyyy-MM-dd";
@@ -515,6 +402,7 @@ public class ContactEditorActivity extends AppCompatActivity
         String mainAddress = mAddressEditText.getText().toString();
         int email_type = getEmailFieldType((String) mSpinnerEmail.getSelectedItem());
         int phone_type = getPhoneFieldType((String) mSpinnerPhone.getSelectedItem());
+        Bitmap contactPhotoBm = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
 
 
         int address_type = getAddressFieldType((String) mSpinnerAddress.getSelectedItem());
@@ -531,6 +419,10 @@ public class ContactEditorActivity extends AppCompatActivity
             insertEmail(ops, mainEmail, rawContactInsertIndex, email_type);
             if (!isEmpty(mAddressEditText))
                 insertAddress(ops, mainAddress, rawContactInsertIndex, address_type);
+            if (contactPhotoBm != null) {
+                insertPhoto(ops, rawContactInsertIndex, contactPhotoBm);
+            }
+
 
             // Add extra details
             Collections.sort(mAdditionalAddressViews);
@@ -580,6 +472,10 @@ public class ContactEditorActivity extends AppCompatActivity
                     ContactsContract.CommonDataKinds.Phone.TYPE,
                     phone_type);
             mPhoneNumbers.get(0).setNumber(mainNumber);
+
+            if (contactPhotoBm != null)
+                insertAdditionalPhoto(ops, mRawContactId, contactPhotoBm);
+            //   updatePhoto(this, contactPhotoBm, mRawContactId);
 
             // update main address
             if (!isEmpty(mAddressEditText)) {

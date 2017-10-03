@@ -39,9 +39,10 @@
         <activity
             android:name=".ContactEditorActivity"
             android:label="Edit Contact"
+            android:windowSoftInputMode="adjustPan"
             android:configChanges="orientation" />
 
-        <provider
+<!--        <provider
             android:name="LegacyCompatFileProvider"
             android:authorities="${applicationId}.provider"
             android:exported="false"
@@ -49,7 +50,7 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"/>
-        </provider>
+        </provider>-->
     </application>
 
 </manifest>

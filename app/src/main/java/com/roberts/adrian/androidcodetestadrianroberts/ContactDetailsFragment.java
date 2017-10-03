@@ -69,7 +69,7 @@ public class ContactDetailsFragment extends Fragment
             ContactsContract.CommonDataKinds.Email.TYPE,
             ContactsContract.CommonDataKinds.Email.DISPLAY_NAME_PRIMARY,
             ContactsContract.CommonDataKinds.Email._ID,
-            ContactsContract.CommonDataKinds.Email.PHOTO_URI
+            ContactsContract.CommonDataKinds.Email.PHOTO_URI,
 
     };
     public static final String[] ADDRESS_PROJECTION = {
@@ -119,8 +119,9 @@ public class ContactDetailsFragment extends Fragment
 //    LinearLayout mDetailsLayout;
     @BindView(R.id.empty_details)
     TextView mEmptyView;
-    @BindView(R.id.details_ll)LinearLayout
-    mDetailsLinearLayout;
+    @BindView(R.id.details_ll)
+    LinearLayout
+            mDetailsLinearLayout;
     @BindView(R.id.numbers_recycler_view)
     RecyclerView mNumbersRecyclerView;
     @BindView(R.id.addresses_recycler_view)
@@ -142,17 +143,16 @@ public class ContactDetailsFragment extends Fragment
     private ArrayList<ContactAddress> mAddresses;
     private String mBdate;
     private String mName;
+    private String mPhotoUri;
 
     private boolean mIsTwoPaneLayout;
 
     public static ContactDetailsFragment newInstance(Uri contactUri, String name) {
-        Log.i(TAG, "newInstance");
         ContactDetailsFragment fragment = new ContactDetailsFragment();
         Bundle args = new Bundle();
         args.putParcelable(EXTRA_CONTACT_URI, contactUri);
         args.putString(EXTRA_CONTACT_NAME, name);
         fragment.setArguments(args);
-        Log.i("DETAILSDRAG", "new Instance");
         return fragment;
     }
 
@@ -216,7 +216,7 @@ public class ContactDetailsFragment extends Fragment
             mDetailsLinearLayout.setVisibility(View.INVISIBLE);
             mEmptyView.setVisibility(VISIBLE);
 
-        }else {
+        } else {
             getLoaderManager().restartLoader(PHONE_NUMBERS_LOADER_ID, null, this);
             getLoaderManager().restartLoader(EMAILS_LOADER_ID, null, this);
             getLoaderManager().restartLoader(ADDRESSES_LOADER_ID, null, this);
@@ -338,8 +338,8 @@ public class ContactDetailsFragment extends Fragment
                 }
                 cursor.moveToFirst();
                 if (cursor.getCount() > 0) {
-                    String contactImage = cursor.getString(INDEX_EMAIL_PHOTO_URI);
-                    Picasso.with(getActivity()).load(contactImage).centerCrop().resize(222,222).
+                    mPhotoUri = cursor.getString(INDEX_EMAIL_PHOTO_URI);
+                    Picasso.with(getActivity()).load(mPhotoUri).centerCrop().resize(222, 222).
                             placeholder(R.drawable.ic_contact_picture).error(R.drawable.ic_contact_picture).into(mImageView);
                 }
                 mEmailAdapter.swapCursor(cursor);
@@ -397,7 +397,7 @@ public class ContactDetailsFragment extends Fragment
 
             mEditContactMenuItem = menu.findItem(R.id.menu_edit_contact);
             Log.i("DetailsFragOptionsMenu", "mContact uri null " + (mContactUri == null));
-            mEditContactMenuItem.setVisible(mContactUri != null && !mIsTwoPaneLayout);
+            mEditContactMenuItem.setVisible(mContactUri != null && !mIsTwoPaneLayout); //duh
         }
 
     }
@@ -413,6 +413,7 @@ public class ContactDetailsFragment extends Fragment
                 bundle.putParcelableArrayList(EXTRA_EMAILS_LIST, mEmails);
                 bundle.putParcelableArrayList(EXTRA_ADDRESSES_LIST, mAddresses);
                 bundle.putString("birthday", mBdate);
+                bundle.putString("photoUri", mPhotoUri);
                 bundle.putString(EXTRA_CONTACT_NAME,
                         mName);
                 editContact.putExtras(bundle);

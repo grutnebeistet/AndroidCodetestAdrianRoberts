@@ -1,11 +1,19 @@
 package com.roberts.adrian.androidcodetestadrianroberts;
 
 import android.content.ContentProviderOperation;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.provider.ContactsContract;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 
@@ -127,6 +135,56 @@ public class DbUtils {
                 .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, type)
                 .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, phoneNO)
                 .build());
+    }
+    public static void insertPhoto(ArrayList<ContentProviderOperation> ops,int index, Bitmap photo) {
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        photo.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+        byte[] b = baos.toByteArray();
+
+        ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, index)
+                .withValue(ContactsContract.Data.MIMETYPE,
+                        ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+                .withValue(ContactsContract.CommonDataKinds.Photo.DATA15,b)
+                .build());
+    }
+    public static void insertAdditionalPhoto(ArrayList<ContentProviderOperation> ops, int index, Bitmap photo) {
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        photo.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+        byte[] b = baos.toByteArray();
+
+        ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValue(ContactsContract.Data.RAW_CONTACT_ID, index)
+                .withValue(ContactsContract.Data.MIMETYPE,
+                        ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+                .withValue(ContactsContract.CommonDataKinds.Photo.DATA15,b)
+                .build());
+    }
+
+
+    public static void updatePhoto(Context context, Bitmap photo, int rawId) {
+        ByteArrayOutputStream BmpStream = new ByteArrayOutputStream();
+        ContentResolver cr = context.getContentResolver();
+        Uri RawContactPhotoUri;
+
+        RawContactPhotoUri = Uri.withAppendedPath(
+                ContentUris.withAppendedId(ContactsContract.RawContacts.CONTENT_URI, rawId),
+                ContactsContract.RawContacts.DisplayPhoto.CONTENT_DIRECTORY
+        );
+
+        photo.compress(Bitmap.CompressFormat.JPEG, 100, BmpStream);
+
+        try {
+            AssetFileDescriptor fd = cr.openAssetFileDescriptor(RawContactPhotoUri, "rw");
+            OutputStream os = fd.createOutputStream();
+            os.write(BmpStream.toByteArray());
+            os.close();
+            fd.close();
+        } catch (IOException e) {
+
+        }
     }
 
     public static void updateContactField(ArrayList<ContentProviderOperation> ops,

@@ -30,29 +30,17 @@
         <ImageView
             android:id="@+id/image_view"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="400dp"
             android:background="@color/colorBackground"
             android:visibility="gone" />
 
-        <!--<LinearLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:orientation="horizontal"-->
-            <!--&gt;-->
-            <!--<ImageView-->
-                <!--android:layout_width="20dp"-->
-                <!--android:layout_height="20dp"-->
-                <!--android:layout_gravity="center_vertical"-->
-                <!--android:src="@drawable/ic_action_dial"/>-->
-
-            <EditText
-                android:id="@+id/edit_text_fname"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="First name"
-                android:inputType="textCapSentences"
-                android:paddingTop="@dimen/padding" />
-        <!--</LinearLayout>-->
+        <EditText
+            android:id="@+id/edit_text_fname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="First name"
+            android:inputType="textCapSentences"
+            android:paddingTop="@dimen/padding" />
 
         <EditText
             android:id="@+id/edit_text_lname"
