@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -114,7 +115,7 @@ public class ContactDetailsFragment extends Fragment
     // Used to store references to key views, layouts and menu items as these need to be updated
     // in multiple methods throughout this class.
     @BindView(R.id.contact_image)
-    ImageView mImageView;
+    CircleImageView mImageView;
     //    @BindView(R.id.contact_details_layout)
 //    LinearLayout mDetailsLayout;
     @BindView(R.id.empty_details)

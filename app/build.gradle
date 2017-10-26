@@ -2,12 +2,12 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "com.roberts.adrian.androidcodetestadrianroberts"
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 4
+        versionCode 5
         versionName "1.001"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -43,10 +43,10 @@ dependencies {
     compile 'com.mindorks:paracamera:0.2.2'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.commonsware.cwac:provider:0.5.0'
-    compile 'com.android.support:appcompat-v7:26.+'
+    compile 'com.android.support:appcompat-v7:26.1.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.android.support:support-v4:26.+'
-    compile 'com.android.support:recyclerview-v7:26.+'
+    compile 'com.android.support:support-v4:26.1.0'
+    compile 'com.android.support:recyclerview-v7:26.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.jakewharton:butterknife:8.7.0'
     compile 'com.google.android:flexbox:0.1.3'

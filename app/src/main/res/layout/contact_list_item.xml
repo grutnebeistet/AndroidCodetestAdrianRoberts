@@ -16,8 +16,8 @@
         android:src="@drawable/ic_contact_picture" />-->
     <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@android:id/icon"
-        android:layout_width="?android:attr/listPreferredItemHeight"
-        android:layout_height="?android:attr/listPreferredItemHeight"
+        android:layout_width="@dimen/circle_image_list"
+        android:layout_height="@dimen/circle_image_list"
         android:padding="@dimen/padding_medium"
         android:src="@mipmap/ic_contact_picture"
         app:civ_border_color="@color/colorAccent"
@@ -27,6 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:paddingLeft="@dimen/padding"
         android:layout_margin="@dimen/text_margin">
 
         <TextView
@@ -42,7 +43,6 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textStyle="italic"
-            android:visibility="gone"
             tools:text="Bjarne Hansen" />
         <TextView
             android:id="@+id/list_item_contact_number"
@@ -50,7 +50,6 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textStyle="italic"
-            android:visibility="gone"
             tools:text="Bjarne Hansen" />
     </LinearLayout>
 </LinearLayout>

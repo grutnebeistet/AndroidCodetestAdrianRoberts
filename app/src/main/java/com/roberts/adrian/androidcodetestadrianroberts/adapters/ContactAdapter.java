@@ -168,10 +168,10 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
                         centerCrop().fit().placeholder(R.drawable.ic_contact_picture).error(R.drawable.ic_contact_picture).into(holder.mIcon);
 
             }
-        } else {
+        }/* else {
             holder.mContactEmail.setVisibility(View.GONE);
             holder.mContactNumber.setVisibility(View.GONE);
-        }
+        }*/
             /*e
             contactThumbnail = mFilteredCursor.getString(4);
             holder.mContactName.setText(fullName);

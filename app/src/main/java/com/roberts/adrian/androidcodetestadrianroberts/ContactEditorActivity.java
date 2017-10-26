@@ -402,7 +402,9 @@ public class ContactEditorActivity extends AppCompatActivity
         String mainAddress = mAddressEditText.getText().toString();
         int email_type = getEmailFieldType((String) mSpinnerEmail.getSelectedItem());
         int phone_type = getPhoneFieldType((String) mSpinnerPhone.getSelectedItem());
-        Bitmap contactPhotoBm = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
+        Bitmap contactPhotoBm = null;
+        if (mImageView.getDrawable() != null)
+            contactPhotoBm = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
 
 
         int address_type = getAddressFieldType((String) mSpinnerAddress.getSelectedItem());
